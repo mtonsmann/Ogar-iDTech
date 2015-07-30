@@ -104,7 +104,7 @@ PacketHandler.prototype.handleMessage = function(message) {
             this.pressW = true;
             break;
         case 255:
-            // Connection Start 
+            // Connection Start
             if (view.byteLength == 5) {
                 this.protocol = view.getUint32(1, true);
                 // Send SetBorder packet first
@@ -118,10 +118,17 @@ PacketHandler.prototype.handleMessage = function(message) {
 };
 
 PacketHandler.prototype.setNickname = function(newNick) {
-    var client = this.socket.playerTracker;
-    if (client.cells.length < 1) {
-        // Set name first
-        client.setName(newNick); 
+  var fs = require('fs');
+  var client = this.socket.playerTracker;
+  if (client.cells.length < 1) {
+    // test for profanity/etc
+    var array = fs.readFileSync('BadWords.txt').toString().split("\n");
+    for(i in array) {
+    if (str.indexOf(bad[i]) > -1) {
+      newNick = "REAL_NAME";
+    }
+  }
+  client.setName(newNick);
 
         // If client has no cells... then spawn a player
         this.gameServer.gameMode.onPlayerSpawn(this.gameServer,client);
@@ -130,4 +137,3 @@ PacketHandler.prototype.setNickname = function(newNick) {
         client.spectate = false;
     }
 };
-
