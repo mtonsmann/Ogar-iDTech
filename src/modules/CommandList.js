@@ -70,16 +70,16 @@ Commands.list = {
         // Clears the update leaderboard function and replaces it with our own
         gameServer.gameMode.packetLB = 48;
         gameServer.gameMode.specByLeaderboard = false;
-        gameServer.gameMode.updateLB = function(gameServer) {gameServer.leaderboard = newLB}; 
+        gameServer.gameMode.updateLB = function(gameServer) {gameServer.leaderboard = newLB};
         console.log("[Console] Successfully changed leaderboard values");
     },
     boardreset: function(gameServer) {
         // Gets the current gamemode
         var gm = GameMode.get(gameServer.gameMode.ID);
-        
+
         // Replace functions
         gameServer.gameMode.packetLB = gm.packetLB;
-        gameServer.gameMode.updateLB = gm.updateLB; 
+        gameServer.gameMode.updateLB = gm.updateLB;
         console.log("[Console] Successfully reset leaderboard");
     },
     change: function(gameServer,split) {
@@ -131,7 +131,10 @@ Commands.list = {
     exit: function(gameServer,split) {
         console.log("[Console] Closing server...");
         gameServer.socketServer.close();
-        process.exit(1);
+        gameServer.masterUpdater.removeServer();
+        setTimeout(function(){
+          process.exit(1);
+        },1000);
     },
     food: function(gameServer,split) {
         var pos = {x: parseInt(split[1]), y: parseInt(split[2])};
@@ -151,7 +154,7 @@ Commands.list = {
         var f = new Entity.Food(gameServer.getNextNodeId(), null, pos, mass);
         f.setColor(gameServer.getRandomColor());
         gameServer.addNode(f);
-        gameServer.currentFood++; 
+        gameServer.currentFood++;
         console.log("[Console] Spawned 1 food cell at ("+pos.x+" , "+pos.y+")");
     },
     gamemode: function(gameServer,split) {
@@ -172,7 +175,7 @@ Commands.list = {
             console.log("[Console] Please specify a valid player ID!");
             return;
         }
-        
+
         for (var i in gameServer.clients) {
             if (gameServer.clients[i].playerTracker.pID == id) {
                 var client = gameServer.clients[i].playerTracker;
@@ -224,7 +227,7 @@ Commands.list = {
             console.log("[Console] Please specify a valid player ID!");
             return;
         }
-        
+
         var amount = Math.max(parseInt(split[2]),9);
         if (isNaN(amount)) {
             console.log("[Console] Please specify a valid number");
@@ -251,7 +254,7 @@ Commands.list = {
             console.log("[Console] Please specify a valid player ID!");
             return;
         }
-        
+
         var name = split[2];
         if (typeof name == 'undefined') {
             console.log("[Console] Please type a valid name");
@@ -292,14 +295,14 @@ Commands.list = {
             // Get name and data
             var nick = '', cells = '', score = '', position = '', data = '';
             if (client.spectate) {
-                try { 
+                try {
                     // Get spectated player
                     if (gameServer.getMode().specByLeaderboard) { // Get spec type
                         nick = gameServer.leaderboard[client.spectatedPlayer].name;
                     } else {
                         nick = gameServer.clients[client.spectatedPlayer].playerTracker.name;
                     }
-                } catch (e) { 
+                } catch (e) {
                     // Specating nobody
                     nick = "";
                 }
@@ -312,7 +315,7 @@ Commands.list = {
                 score = fillChar(client.getScore(true), ' ', 6, true);
                 position = fillChar(client.centerPos.x, ' ', 5, true) + ', ' + fillChar(client.centerPos.y, ' ', 5, true);
                 console.log(" "+id+" | "+ip+" | "+nick+" | "+cells+" | "+score+" | "+position);
-            } else { 
+            } else {
                 // No cells = dead player or in-menu
                 data = fillChar('DEAD OR NOT PLAYING', '-', ' | CELLS | SCORE  | POSITION    '.length + gameServer.config.playerMaxNickLength, true);
                 console.log(" " + id + " | " + ip + " | " + data);
@@ -353,12 +356,12 @@ Commands.list = {
         }
 
         // Make sure the input values are numbers
-        var pos = {x: parseInt(split[2]), y: parseInt(split[3])};      
+        var pos = {x: parseInt(split[2]), y: parseInt(split[3])};
         if (isNaN(pos.x) || isNaN(pos.y)) {
             console.log("[Console] Invalid coordinates");
             return;
         }
-        
+
         // Spawn
         for (var i in gameServer.clients) {
             if (gameServer.clients[i].playerTracker.pID == id) {
@@ -376,7 +379,7 @@ Commands.list = {
     virus: function(gameServer,split) {
         var pos = {x: parseInt(split[1]), y: parseInt(split[2])};
         var mass = parseInt(split[3]);
-         
+
         // Make sure the input values are numbers
         if (isNaN(pos.x) || isNaN(pos.y)) {
             console.log("[Console] Invalid coordinates");
@@ -384,7 +387,7 @@ Commands.list = {
         } if (isNaN(mass)) {
             mass = gameServer.config.virusStartMass;
         }
-        
+
         // Spawn
         var v = new Entity.Virus(gameServer.getNextNodeId(), null, pos, mass);
         gameServer.addNode(v);
