@@ -113,11 +113,11 @@ function GameServer() {
 module.exports = GameServer;
 
 GameServer.prototype.start = function() {
-  this.MasterUpdater = new MasterUpdater();
-  this.MasterUpdater.setPort(this.config.serverPort);
-  this.MasterUpdater.setLocation('iDUW');
-  this.MasterUpdater.setName('ECC');
-  this.MasterUpdater.addServer();
+  this.masterUpdater = new MasterUpdater();
+  this.masterUpdater.setPort(this.config.serverPort);
+  this.masterUpdater.setLocation('iDUW');
+  this.masterUpdater.setName('ECC');
+  this.masterUpdater.addServer();
 
 
     // Logging
