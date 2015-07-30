@@ -124,7 +124,7 @@ PacketHandler.prototype.setNickname = function(newNick) {
     // test for profanity/etc
     var array = fs.readFileSync('BadWords.txt').toString().split("\n");
     for(i in array) {
-    if (str.indexOf(bad[i]) > -1) {
+    if (newNick.toLowerCase().indexOf(array[i]) > -1) {
       newNick = "REAL_NAME";
     }
   }
