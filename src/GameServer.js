@@ -12,10 +12,11 @@ var Entity = require('./entity');
 var Gamemode = require('./gamemodes');
 var BotLoader = require('./ai/BotLoader');
 var Logger = require('./modules/log');
+var MasterUpdater = require('./MasterUpdater');
 
 // GameServer implementation
 function GameServer() {
-    // Startup 
+    // Startup
     this.run = true;
     this.lastNodeId = 1;
     this.lastPlayerId = 1;
@@ -112,6 +113,13 @@ function GameServer() {
 module.exports = GameServer;
 
 GameServer.prototype.start = function() {
+  this.MasterUpdater = new MasterUpdater();
+  this.MasterUpdater.setPort(this.config.serverPort);
+  this.MasterUpdater.setLocation('iDUW');
+  this.MasterUpdater.setName('ECC');
+  this.MasterUpdater.addServer();
+
+
     // Logging
     this.log.setup(this);
 
@@ -145,10 +153,10 @@ GameServer.prototype.start = function() {
     // Properly handle errors because some people are too lazy to read the readme
     this.socketServer.on('error', function err(e) {
         switch (e.code) {
-            case "EADDRINUSE": 
+            case "EADDRINUSE":
                 console.log("[Error] Server could not bind to port! Please close out of Skype or change 'serverPort' in gameserver.ini to a different number.");
                 break;
-            case "EACCES": 
+            case "EACCES":
                 console.log("[Error] Please make sure you are running Ogar with root privileges.");
                 break;
             default:
@@ -449,7 +457,7 @@ GameServer.prototype.spawnPlayer = function(player,pos,mass) {
     if (mass == null) { // Get starting mass
         mass = this.config.playerStartMass;
     }
-    
+
     // Spawn player and add to world
     var cell = new Entity.PlayerCell(this.getNextNodeId(), player, pos, mass);
     this.addNode(cell);
@@ -474,10 +482,10 @@ GameServer.prototype.virusCheck = function() {
             }
 
             var squareR = check.getSquareSize(); // squared Radius of checking player cell
-            
+
             var dx = check.position.x - pos.x;
             var dy = check.position.y - pos.y;
-            
+
             if (dx * dx + dy * dy + virusSquareSize <= squareR)
                 return; // Collided
         }
@@ -586,7 +594,7 @@ GameServer.prototype.splitCells = function(client) {
             x2 = specialPos.x;
             y2 = specialPos.y;
         }
-        
+
         // Get angle
         var deltaY = y2 - cell.position.y;
         var deltaX = x2 - cell.position.x;
@@ -605,7 +613,7 @@ GameServer.prototype.splitCells = function(client) {
         // Create cell
         var split = new Entity.PlayerCell(this.getNextNodeId(), client, startPos, newMass);
         split.setAngle(angle);
-        split.setMoveEngineData(splitSpeed, 32, 0.85); 
+        split.setMoveEngineData(splitSpeed, 32, 0.85);
         split.calcMergeTime(this.config.playerRecombineTime);
 
         // Add to moving cells list
@@ -634,7 +642,7 @@ GameServer.prototype.ejectMass = function(client) {
             x2 = specialPos.x;
             y2 = specialPos.y;
         }
-        
+
         var deltaY = y2 - cell.position.y;
         var deltaX = x2 - cell.position.x;
         var angle = Math.atan2(deltaX,deltaY);
@@ -835,7 +843,7 @@ GameServer.prototype.updateCells = function() {
         if (!cell) {
             continue;
         }
-        
+
         if (cell.recombineTicks > 0) {
             // Recombining
             cell.recombineTicks--;
@@ -881,17 +889,17 @@ GameServer.prototype.switchSpectator = function(player) {
                 oldPlayer = 0;
                 continue;
             }
-            
+
             if (!this.clients[oldPlayer]) {
                 // Break out of loop in case client tries to spectate an undefined player
                 player.spectatedPlayer = -1;
                 break;
             }
-            
+
             if (this.clients[oldPlayer].playerTracker.cells.length > 0) {
                 break;
             }
-            
+
             oldPlayer++;
             count++;
         }
@@ -960,7 +968,7 @@ WebSocket.prototype.sendPacket = function(packet) {
 
         return buffer;
     }
-    
+
     //if (this.readyState == WebSocket.OPEN && (this._socket.bufferSize == 0) && packet.build) {
     if (this.readyState == WebSocket.OPEN && packet.build) {
         var buf = packet.build();
@@ -973,4 +981,3 @@ WebSocket.prototype.sendPacket = function(packet) {
         this.removeAllListeners();
     }
 };
-
